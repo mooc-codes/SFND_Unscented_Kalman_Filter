@@ -41,6 +41,22 @@ class UKF {
    */
   void UpdateRadar(MeasurementPackage meas_package);
 
+  /**
+   * Initializes the state and the state covariance matrix using a lidar measurement
+   * @param meas_package The measurement at k+1
+   */
+  void InitializeFromLidar(MeasurementPackage meas_package);
+
+  /**
+   * Initializes the state and the state covariance matrix using a radar measurement
+   * @param meas_package The measurement at k+1
+   */
+  void InitializeFromRadar(MeasurementPackage meas_package);
+
+  /**
+  * Predict sigma points to state k + 1
+  */
+  void PredictSigmaPoints(Eigen::VectorXd& x_k, Eigen::MatrixXd& sigma_x_k, double dt);
 
   // initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
@@ -97,6 +113,9 @@ class UKF {
   double lambda_;
 
   double n_sigma_points_;
+
+  size_t n_obs_radar_;
+  size_t n_obs_lidar_;
 };
 
 #endif  // UKF_H
