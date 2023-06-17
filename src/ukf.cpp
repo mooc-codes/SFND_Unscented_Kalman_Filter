@@ -219,7 +219,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
    * You can also calculate the lidar NIS, if desired.
    */
 
-   MatrixXd::Identity I(n_x_, n_x_);
+   MatrixXd I = MatrixXd::Identity(n_x_, n_x_);
 
    MatrixXd H = MatrixXd::Zero(n_obs_lidar_, n_x_);
    H(0, 0) = 1;
@@ -237,7 +237,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
 
    x_ += K * y;
-   P_ = (I - (K * H)) * P;
+   P_ = (I - (K * H)) * P_;
    
 }
 
@@ -261,7 +261,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
     double radial_dist = sqrt(pow(px, 2) + pow(py, 2));
     Zsig(i, 0) = radial_dist;
-    Zsig(i, 1) = arctan(py/px);
+    Zsig(i, 1) = atan2(py/px);
     Zsig(i, 2) = ( radial_velocity * (px * cos(yaw) + py * sin(yaw))) / radial_dist; 
    }
 
@@ -276,7 +276,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
    z_diff = Zsig - z.replicate(1, n_sigma_points_);
    for(size_t i = 0; i < n_sigma_points_; i++)
    {
-    S.col += weights_(i) * (z_diff.col(i) * z_diff.col(i).transpose())
+    S += weights_(i) * (z_diff.col(i) * z_diff.col(i).transpose())
    }
    S(0, 0) += pow(std_radr_, 2);
    S(1, 1) += pow(std_radphi_, 2);
@@ -287,7 +287,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   for(size_t i = 0; i < n_sigma_points_; i++)
   {
-    T += weights_(i) * ( (Xsig_pred_(i) - x_) * (Zsig(i) - z).transpose());
+    T += weights_(i) * ( (Xsig_pred_.col(i) - x_) * (Zsig.col(i) - z).transpose());
   }
 
   MatrixXd K = T * S.inverse();
