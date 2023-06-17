@@ -218,6 +218,25 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
    * You can also calculate the lidar NIS, if desired.
    */
 
+   Matrixd::Identity I(n_x_, n_x_);
+
+   Matrixd::Zeros H(n_obs_lidar_, n_x_);
+   H(0, 0) = 1;
+   H(1, 1) = 1;
+
+   MatrixXd::Zeros R(n_obs_lidar_, n_obs_lidar_);
+   R(0, 0) = pow(std_laspx_, 2);
+   R(1, 1) = pow(std_laspy_, 2);
+
+   // Since the measurement transfrom function for the lidar is simply a selection matrix
+   // we can directly use the values from the state x_
+   VectorXd y = meas_package.raw_measurements_ - x_.head(2);
+   MatrixXd S = H * P_* H.transpose()  + R;
+   MatrixXd K = P_ * H.transpose() * S.inverse();
+
+
+   x_ += K * y;
+   P_ = (I - (K * H)) * P;
    
 }
 
@@ -261,5 +280,19 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
    S(0, 0) += pow(std_radr_, 2);
    S(1, 1) += pow(std_radphi_, 2);
    S(2, 2) += pow(std_radrd_, 2);
+
+
+  Matrixd::Zeros T(n_x_, n_obs_radar_);
+
+  for(size_t i = 0; i < n_sigma_points_; i++)
+  {
+    T += weights_(i) * ( (Xsig_pred_(i) - x_) * (Zsig(i) - z).transpose());
+  }
+
+  MatrixXd K = T * S.inverse();
+
+  x_ += K * (meas_package.raw_measurements_ - z);
+
+  P_ -= K * S * K.transpose();
 
 }
