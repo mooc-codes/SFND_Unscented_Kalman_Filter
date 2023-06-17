@@ -129,7 +129,8 @@ void UKF::InitializeFromRadar(MeasurementPackage meas_package)
   P_(3, 3) = pow(std_radphi_, 2);
 }
 
-void UKF::Prediction(double delta_t) {
+void UKF::Prediction(double delta_t) 
+{
   /**
    * TODO: Complete this function! Estimate the object's location. 
    * Modify the state vector, x_. Predict sigma points, the state, 
@@ -137,9 +138,9 @@ void UKF::Prediction(double delta_t) {
    */
 
   // Augmented state mean and covariance.
-  VectorXd::Zero X_aug(n_aug_);
+  VectorXd X_aug = VectorXd::Zero(n_aug_);
   X_aug.head(n_x_) = x_;
-  MatrixXd::Zero P_aug(n_aug_, n_aug_);
+  MatrixXd P_aug = MatrixXd::Zero(n_aug_, n_aug_);
   P_.topLeftCorner(n_x_, n_x_) = P_;
   P_(n_x_, n_x_) = pow(std_a_, 2);
   P_(n_x_+1, n_x_+1) = pow(std_yawdd_, 2);
@@ -151,7 +152,7 @@ void UKF::Prediction(double delta_t) {
 
   // Compute sigma points
   // Xsig_pred_ is already initialized with Zero during construction.
-  MatrixXd::Zero Xsig_aug(n_aug_, n_sigma_points_);
+  MatrixXd Xsig_aug = MatrixXd::Zero(n_aug_, n_sigma_points_);
   Xsig_aug(0) = X_aug;
   Xsig_aug.block(0, 1, n_aug_, n_aug_) = X_aug.replicate(1, n_aug_) + sigma_factors;
   Xsig_aug.block(0, n_aug_ + 1, n_aug_, n_aug_) = X_aug.replicate(1, n_aug_) - sigma_factors;
