@@ -27,6 +27,8 @@ UKF::UKF() {
   std_radrd_ = 0.3;
   
   // Filter variables
+  n_obs_radar_ = 3;
+  n_obs_lidar_ = 2;
   n_x_ = 5; // Dimensions of the state
   n_aug_ = 7; // Dimensions of the augmented state
   lambda_ = 3 - n_aug_; // Spread for sigma points
@@ -226,4 +228,38 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
    * covariance, P_.
    * You can also calculate the radar NIS, if desired.
    */
+
+   // Project sigma points into measurement space
+   MatrixXd::Zeros Zsig(n_obs_radar_, n_sigma_points_);
+   double px, py, radial_velocity, yaw;
+   for(size_t i = 0; i < n_sigma_points_; i++)
+   {
+    px = Xsig_pred_(i, 0);
+    py = Xsig_pred_(i, 1);
+    radial_velocity = Xsig_pred_(i, 2)
+    yaw = Xsig_pred_(i, 3);
+
+    double radial_dist = sqrt(pow(px, 2) + pow(py, 2));
+    Zsig(i, 0) = radial_dist;
+    Zsig(i, 1) = arctan(py/px);
+    Zsig(i, 2) = ( radial_velocity * (px * cos(yaw) + py * sin(yaw))) / radial_dist; 
+   }
+
+   VectorXd::zeros z(n_obs_radar_);
+   MatrixXd::Zeros S(n_obs_radar_, n_obs_radar_);
+   for(size_t i = 0; i < n_sigma_points_; i++)
+   {
+    z += weights_(i) * Zsig.col(i);
+   }
+
+   MatrixXd::Zeros z_diff(n_obs_radar_, n_sigma_points_);
+   z_diff = Zsig - z.replicate(1, n_sigma_points_);
+   for(size_t i = 0; i < n_sigma_points_; i++)
+   {
+    S.col += weights_(i) * (z_diff.col(i) * z_diff.col(i).transpose())
+   }
+   S(0, 0) += pow(std_radr_, 2);
+   S(1, 1) += pow(std_radphi_, 2);
+   S(2, 2) += pow(std_radrd_, 2);
+
 }

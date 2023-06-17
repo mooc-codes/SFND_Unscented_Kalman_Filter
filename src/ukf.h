@@ -113,6 +113,9 @@ class UKF {
   double lambda_;
 
   double n_sigma_points_;
+
+  size_t n_obs_radar_;
+  size_t n_obs_lidar_;
 };
 
 #endif  // UKF_H
