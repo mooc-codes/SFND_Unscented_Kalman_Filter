@@ -148,7 +148,7 @@ void UKF::Prediction(double delta_t)
   // Compute the square root of augmented covariance and (lambda_ + n_aug_) to be used in sigma point computation.
   MatrixXd Paug_sqrt = P_aug.llt().matrixL();
   double spread_factor = sqrt(lambda_ + n_aug_);
-  MatrixXd sigma_factors = spread_factor * Paug_sqrt.colwise();
+  MatrixXd sigma_factors = spread_factor * Paug_sqrt;
 
   // Compute sigma points
   // Xsig_pred_ is already initialized with Zero during construction.
