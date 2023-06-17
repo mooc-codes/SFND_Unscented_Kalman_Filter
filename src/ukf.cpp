@@ -142,7 +142,7 @@ void UKF::Prediction(double delta_t) {
   P_(n_x_, n_x_) = pow(std_a_, 2);
   P_(n_x_+1, n_x_+1) = pow(std_yawdd_, 2);
 
-  // Compute the square root of augmented covariance and (lambda + n_aug) to be used in sigma point computation.
+  // Compute the square root of augmented covariance and (lambda_ + n_aug_) to be used in sigma point computation.
   MatrixXd Paug_sqrt = P_aug.llt().matrixL();
   double spread_factor = sqrt(lambda_ + n_aug_);
   MatrixXd sigma_factors = spread_factor * Paug_sqrt.colwise();
@@ -151,8 +151,8 @@ void UKF::Prediction(double delta_t) {
   // Xsig_pred_ is already initialized with zeros during construction.
   MatrixXd::Zeros Xsig_aug(n_aug_, n_sigma_points_);
   Xsig_aug(0) = X_aug;
-  Xsig_aug.block(0, 1, n_aug_, n_aug_) = X_aug.replicate(1, n_aug) + sigma_factors;
-  Xsig_aug.block(0, n_aug_ + 1, n_aug_, n_aug_) = X_aug.replicate(1, n_aug) - sigma_factors;
+  Xsig_aug.block(0, 1, n_aug_, n_aug_) = X_aug.replicate(1, n_aug_) + sigma_factors;
+  Xsig_aug.block(0, n_aug_ + 1, n_aug_, n_aug_) = X_aug.replicate(1, n_aug_) - sigma_factors;
 
   // Predict sigma points to k + 1
   PredictSigmaPoints(X_aug, Xsig_aug, dt);
