@@ -41,6 +41,17 @@ class UKF {
    */
   void UpdateRadar(MeasurementPackage meas_package);
 
+  /**
+   * Initializes the state and the state covariance matrix using a lidar measurement
+   * @param meas_package The measurement at k+1
+   */
+  void InitializeFromLidar(MeasurementPackage meas_package);
+
+  /**
+   * Initializes the state and the state covariance matrix using a radar measurement
+   * @param meas_package The measurement at k+1
+   */
+  void InitializeFromRadar(MeasurementPackage meas_package);
 
   // initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;

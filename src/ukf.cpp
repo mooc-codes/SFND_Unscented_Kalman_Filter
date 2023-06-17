@@ -95,6 +95,38 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
 }
 
+
+void UKF::InitializeFromLidar(MeasurementPackage meas_package)
+{
+  x_(0) = meas_package.raw_measurements_(0); //px
+  x_(1) = meas_package.raw_measurements_(1); //py
+
+  P_(0, 0) = pow(std_laspx_, 2);
+  P_(1, 1) = pow(std_laspy_, 2);
+}
+
+
+void UKF::InitializeFromRadar(MeasurementPackage meas_package)
+{
+  double range, turn_angle, range_rate;
+  double px, py, radial_velocity, turn_rate;
+  range = meas_package.raw_measurements_(0);
+  turn_angle = measurement_package.raw_measurements_(1);
+  range_rate = meas_package.raw_measurements_(2);
+
+  px = range * cos(turn_angle);
+  py = range * sin(turn_angle);
+
+  x_(0) = px;
+  x_(1) = py;
+  x_(2) = radial_velocity;
+  x_(3) = turn_angle;
+  x_(4) = 0; // No direct conversion available for turn rate
+
+  P_(2, 2) = pow(std_radrd_, 2);
+  P_(3, 3) = pow(std_radphi_, 2);
+}
+
 void UKF::Prediction(double delta_t) {
   /**
    * TODO: Complete this function! Estimate the object's location. 
