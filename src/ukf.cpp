@@ -179,6 +179,11 @@ void UKF::Prediction(double delta_t)
   MatrixXd error = Xsig_pred_ - x_.replicate(1, n_sigma_points_);
   for(size_t i = 0; i < n_sigma_points_; i++)
   {
+    //normalize angles
+    while (error(3) > M_PI) 
+      error(3) -= 2. * M_PI;
+    while (error(3) < -M_PI) 
+      error(3) += 2. * M_PI;
     P_ += weights_(i) * (error.col(i) * error.col(i).transpose());
   }
 
