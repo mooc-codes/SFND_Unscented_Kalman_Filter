@@ -261,7 +261,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
     double radial_dist = sqrt(pow(px, 2) + pow(py, 2));
     Zsig(i, 0) = radial_dist;
-    Zsig(i, 1) = atan2(py/px);
+    Zsig(i, 1) = atan2(py, px);
     Zsig(i, 2) = ( radial_velocity * (px * cos(yaw) + py * sin(yaw))) / radial_dist; 
    }
 
