@@ -171,7 +171,6 @@ void UKF::Prediction(double delta_t) {
 
 }
 
-
 void UKF::PredictSigmaPoints(VectorXd& x_k, MatrixXd& sigma_x_k, double dt)
 {
   double px, py, radial_velocity, yaw, yaw_rate;
@@ -216,6 +215,8 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
    * covariance, P_.
    * You can also calculate the lidar NIS, if desired.
    */
+
+   
 }
 
 void UKF::UpdateRadar(MeasurementPackage meas_package) {
