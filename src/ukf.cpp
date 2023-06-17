@@ -128,8 +128,11 @@ void UKF::InitializeFromRadar(MeasurementPackage meas_package)
   x_(3) = turn_angle;
   x_(4) = 0; // No direct conversion available for turn rate
 
+  P_(0, 0) = pow(std_radr_, 2);
+  P_(1, 1) = pow(std_radr_, 2);
   P_(2, 2) = pow(std_radrd_, 2);
   P_(3, 3) = pow(std_radphi_, 2);
+  P_(4, 4) = pow(std_radrd_, 2);
 
 }
 
