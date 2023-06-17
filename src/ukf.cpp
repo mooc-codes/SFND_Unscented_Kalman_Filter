@@ -104,6 +104,9 @@ void UKF::InitializeFromLidar(MeasurementPackage meas_package)
 {
   x_(0) = meas_package.raw_measurements_(0); //px
   x_(1) = meas_package.raw_measurements_(1); //py
+  x_(2) = 0;
+  x_(3) = 0;
+  x_(4) = 0;
 
   P_(0, 0) = pow(std_laspx_, 2);
   P_(1, 1) = pow(std_laspy_, 2);
