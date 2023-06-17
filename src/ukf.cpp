@@ -219,9 +219,9 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
    * You can also calculate the lidar NIS, if desired.
    */
 
-   Matrixd::Identity I(n_x_, n_x_);
+   MatrixXd::Identity I(n_x_, n_x_);
 
-   Matrixd H = Matrixd::Zero(n_obs_lidar_, n_x_);
+   MatrixXd H = MatrixXd::Zero(n_obs_lidar_, n_x_);
    H(0, 0) = 1;
    H(1, 1) = 1;
 
@@ -283,7 +283,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
    S(2, 2) += pow(std_radrd_, 2);
 
 
-  MatrixXd T = Matrixd::Zero(n_x_, n_obs_radar_);
+  MatrixXd T = MatrixXd::Zero(n_x_, n_obs_radar_);
 
   for(size_t i = 0; i < n_sigma_points_; i++)
   {
