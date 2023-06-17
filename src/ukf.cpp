@@ -212,9 +212,9 @@ void UKF::PredictSigmaPoints(VectorXd& x_k, MatrixXd& sigma_x_k, double dt)
     noise(4) = dt * v_pk;
 
     VectorXd sigma_pred = VectorXd::Zero(n_x_);
-    if(radial_velocity > 0.01)
+    if(yaw_rate > 0.01)
     {
-      double scale = radial_velocity / yaw;
+      double scale = radial_velocity / yaw_rate;
       sigma_pred(0) = scale * (sin(yaw + (yaw_rate *dt)) - sin(yaw));
       sigma_pred(1) = scale * (-cos(yaw + (yaw_rate * dt)) + cos(yaw));
       sigma_pred(3) = yaw_rate * dt;  
