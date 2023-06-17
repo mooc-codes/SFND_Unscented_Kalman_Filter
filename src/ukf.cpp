@@ -153,17 +153,17 @@ void UKF::Prediction(double delta_t)
   // Compute sigma points
   // Xsig_pred_ is already initialized with Zero during construction.
   MatrixXd Xsig_aug = MatrixXd::Zero(n_aug_, n_sigma_points_);
-  Xsig_aug(0) = X_aug;
+  Xsig_aug.col(0) = X_aug;
   Xsig_aug.block(0, 1, n_aug_, n_aug_) = X_aug.replicate(1, n_aug_) + sigma_factors;
   Xsig_aug.block(0, n_aug_ + 1, n_aug_, n_aug_) = X_aug.replicate(1, n_aug_) - sigma_factors;
 
   // Predict sigma points to k + 1
-  PredictSigmaPoints(X_aug, Xsig_aug, dt);
+  PredictSigmaPoints(X_aug, Xsig_aug, delta_t);
 
   // Update the state mean x_ and covariance P_ using weighted sum
   for(size_t i = 0; i < n_sigma_points_; i++)
   {
-    x_ += weights_(i) * Xsig_pred_(i);
+    x_ += weights_(i) * Xsig_pred_.col(i);
   }
   
   MatrixXd error = Xsig_pred_ - x_.replicate(1, n_sigma_points_);
@@ -186,14 +186,14 @@ void UKF::PredictSigmaPoints(VectorXd& x_k, MatrixXd& sigma_x_k, double dt)
     yaw = sigma_x_k(3);
     yaw_rate = sigma_x_k(4);
 
-    VectorXd::Zero noise(n_x_);
+    VectorXd noise = VectorXd::Zero(n_x_);
     noise(0) = 0.5 * pow(dt, 2) * cos(yaw) * sigma_x_k(5);
     noise(1) = 0.5 * pow(dt, 2) * sin(yaw) * sigma_x_k(5);
     noise(2) = dt * sigma_x_k(5);
     noise(3) = 0.5 * pow(dt, 2) * sigma_x_k(6);
     noise(4) = dt * sigma_x_k(6);
 
-    VectorXd::Zero sigma_pred(n_x_);
+    VectorXd sigma_pred = VectorXd::Zero(n_x_);
     if(radial_velocity > 0.01)
     {
       double scale = radial_velocity / yaw;
@@ -221,11 +221,11 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
    Matrixd::Identity I(n_x_, n_x_);
 
-   Matrixd::Zero H(n_obs_lidar_, n_x_);
+   Matrixd H = Matrixd::Zero(n_obs_lidar_, n_x_);
    H(0, 0) = 1;
    H(1, 1) = 1;
 
-   MatrixXd::Zero R(n_obs_lidar_, n_obs_lidar_);
+   MatrixXd R = MatrixXd::Zero(n_obs_lidar_, n_obs_lidar_);
    R(0, 0) = pow(std_laspx_, 2);
    R(1, 1) = pow(std_laspy_, 2);
 
@@ -250,7 +250,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
    */
 
    // Project sigma points into measurement space
-   MatrixXd::Zero Zsig(n_obs_radar_, n_sigma_points_);
+   MatrixXd Zsig = MatrixXd::Zero(n_obs_radar_, n_sigma_points_);
    double px, py, radial_velocity, yaw;
    for(size_t i = 0; i < n_sigma_points_; i++)
    {
@@ -265,14 +265,14 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     Zsig(i, 2) = ( radial_velocity * (px * cos(yaw) + py * sin(yaw))) / radial_dist; 
    }
 
-   VectorXd::Zero z(n_obs_radar_);
-   MatrixXd::Zero S(n_obs_radar_, n_obs_radar_);
+   VectorXd z = VectorXd::Zero(n_obs_radar_);
+   MatrixXd S = MatrixXd::Zero(n_obs_radar_, n_obs_radar_);
    for(size_t i = 0; i < n_sigma_points_; i++)
    {
     z += weights_(i) * Zsig.col(i);
    }
 
-   MatrixXd::Zero z_diff(n_obs_radar_, n_sigma_points_);
+   MatrixXd z_diff = MatrixXd::Zero(n_obs_radar_, n_sigma_points_);
    z_diff = Zsig - z.replicate(1, n_sigma_points_);
    for(size_t i = 0; i < n_sigma_points_; i++)
    {
@@ -283,7 +283,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
    S(2, 2) += pow(std_radrd_, 2);
 
 
-  Matrixd::Zero T(n_x_, n_obs_radar_);
+  MatrixXd T = Matrixd::Zero(n_x_, n_obs_radar_);
 
   for(size_t i = 0; i < n_sigma_points_; i++)
   {
