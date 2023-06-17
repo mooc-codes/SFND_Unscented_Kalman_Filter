@@ -38,7 +38,7 @@ UKF::UKF() {
   P_ = MatrixXd::Identity(5, 5); // Process covariance
   Xsig_pred_ = MatrixXd::Zero(n_x_, n_sigma_points_);
 
-  weights_ = MatrixXd::Zero(n_sigma_points_);
+  weights_ = VectorXd::Zero(n_sigma_points_);
   weights_(0) = lambda_ / (lambda_ + n_aug_);
   double temp_weight = 0.5 / ( lambda_ + n_aug_);
   for(size_t i=1; i < n_sigma_points_; i++)
