@@ -65,7 +65,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       double dt = meas_package.timestamp_ - time_us_;
       time_us_ = meas_package.timestamp_;
 
-      Predict(dt);
+      Prediction(dt);
 
       if(use_laser_ && recieved_lidar_data)
       {
@@ -113,7 +113,7 @@ void UKF::InitializeFromRadar(MeasurementPackage meas_package)
   double range, turn_angle, range_rate;
   double px, py, radial_velocity, turn_rate;
   range = meas_package.raw_measurements_(0);
-  turn_angle = measurement_package.raw_measurements_(1);
+  turn_angle = meas_package.raw_measurements_(1);
   range_rate = meas_package.raw_measurements_(2);
 
   px = range * cos(turn_angle);
