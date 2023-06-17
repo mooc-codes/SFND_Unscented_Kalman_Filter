@@ -34,7 +34,7 @@ UKF::UKF() {
   
   x_ = VectorXd::Zeros(5); // State 
   P_ = MatrixXd::Identity(5, 5); // Process covariance
-  Xsig_pred_ = MatrixXd::Zeros(n_aug_, n_sigma_points_);
+  Xsig_pred_ = MatrixXd::Zeros(n_x_, n_sigma_points_);
 
   weights_ = MatrixXd::Zeros(n_sigma_points_);
   weights_(0) = lambda_ / (lambda_ + n_aug_);
@@ -142,8 +142,6 @@ void UKF::Prediction(double delta_t) {
   P_(n_x_, n_x_) = pow(std_a_, 2);
   P_(n_x_+1, n_x_+1) = pow(std_yawdd_, 2);
 
-
-
   // Compute the square root of augmented covariance and (lambda + n_aug) to be used in sigma point computation.
   MatrixXd Paug_sqrt = P_aug.llt().matrixL();
   double spread_factor = sqrt(lambda_ + n_aug_);
@@ -156,6 +154,52 @@ void UKF::Prediction(double delta_t) {
   Xsig_aug.block(0, 1, n_aug_, n_aug_) = X_aug.replicate(1, n_aug) + sigma_factors;
   Xsig_aug.block(0, n_aug_ + 1, n_aug_, n_aug_) = X_aug.replicate(1, n_aug) - sigma_factors;
 
+  // Predict sigma points to k + 1
+  PredictSigmaPoints(X_aug, Xsig_aug, dt);
+
+}
+
+
+void UKF::PredictSigmaPoints(VectorXd& x_k, MatrixXd& sigma_x_k, double dt)
+{
+  double px, py, radial_velocity, yaw, yaw_rate;
+  double px_pred, py_pred, radial_velocity_pred, yaw_pred, yaw_rate_pred;
+  for(size_t i=0; i < n_sigma_points_; i++)
+  {
+    px = sigma_x_k(0);
+    py = sigma_x_k(1);
+    radial_velocity = sigma_x_k(2);
+    yaw = sigma_x_k(3);
+    yaw_rate = sigma_x_k(4);
+
+    VectorXd::Zeros sigma_pred(n_x_);
+    if(radial_velocity > 0.01)
+    {
+      double scale = radial_velocity / yaw;
+      sigma_pred(0) = scale * (sin(yaw + (yaw_rate *dt)) - sin(yaw));
+      sigma_pred(1) = scale * (-cos(yaw + (yaw_rate * dt)) + cos(yaw));
+      sigma_pred(3) = yaw_rate * dt;  
+    }
+    else
+    {
+      sigma_pred(0) = radial_velocity * cos(yaw) * dt;
+      sigma_pred(1) = radial_velocity * sin(yaw) * dt;
+      sigma_pred(3) = yaw_rate * dt;
+    }
+    Xsig_pred_.col(i) = x_k + sigma_pred; // Add noise here
+  }  
+
+  // Update the state mean x_ and covariance P_ using weighted sum
+  for(size_t i = 0; i < n_sigma_points_; i++)
+  {
+    x_ += weights_(i) * Xsig_pred_(i);
+  }
+  
+  MatrixXd error = Xsig_pred_ - x_.replicate(1, n_sigma_points_);
+  for(size_t i = 0; i < n_sigma_points_; i++)
+  {
+    P_ += weights_(i) * (error.col(i) * error.col(i).transpose());
+  }
   
 }
 

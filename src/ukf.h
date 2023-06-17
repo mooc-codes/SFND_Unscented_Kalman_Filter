@@ -53,6 +53,12 @@ class UKF {
    */
   void InitializeFromRadar(MeasurementPackage meas_package);
 
+
+  /**
+  * Predict sigma points to state k + 1
+  */
+  void PredictSigmaPoints(VectorXd& x_k, MatrixXd& sigma_x_k, dt);
+
   // initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
 
