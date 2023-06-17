@@ -1,6 +1,7 @@
 #include "ukf.h"
 #include "Eigen/Dense"
 #include <iostream>
+#include <cstdlib>
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -16,8 +17,8 @@ UKF::UKF() {
   use_radar_ = true;
 
   // Measuremnt uncertainity values
-  std_a_ = 30;
-  std_yawdd_ = 30;
+  std_a_ = 2;
+  std_yawdd_ = 2;
 
   // Process uncertainity values
   std_laspx_ = 0.15;
@@ -45,7 +46,8 @@ UKF::UKF() {
   {
     weights_(i) = temp_weight;
   }
-
+  std::cout<<"X initial"<<std::endl<<x_<<std::endl;
+  std::cout<<"P initial"<<std::endl<<P_<<std::endl;
 }
 
 UKF::~UKF() {}
@@ -154,7 +156,7 @@ void UKF::Prediction(double delta_t)
   P_aug.topLeftCorner(n_x_, n_x_) = P_;
   P_aug(n_x_, n_x_) = pow(std_a_, 2);
   P_aug(n_x_+1, n_x_+1) = pow(std_yawdd_, 2);
-
+  std::cout<<"X Aug"<<std::endl<<X_aug<<std::endl;
   // Compute the square root of augmented covariance and (lambda_ + n_aug_) to be used in sigma point computation.
   MatrixXd Paug_sqrt = P_aug.llt().matrixL();
   double spread_factor = sqrt(lambda_ + n_aug_);
@@ -166,16 +168,18 @@ void UKF::Prediction(double delta_t)
   Xsig_aug.col(0) = X_aug;
   Xsig_aug.block(0, 1, n_aug_, n_aug_) = X_aug.replicate(1, n_aug_) + sigma_factors;
   Xsig_aug.block(0, n_aug_ + 1, n_aug_, n_aug_) = X_aug.replicate(1, n_aug_) - sigma_factors;
-
+  std::cout<<"X Sig Aug"<<std::endl<<Xsig_aug<<std::endl;
   // Predict sigma points to k + 1
   PredictSigmaPoints(X_aug, Xsig_aug, delta_t);
-
+  std::cout<<"X Pred"<<std::endl<<Xsig_pred_<<std::endl;
   // Update the state mean x_ and covariance P_ using weighted sum
   for(size_t i = 0; i < n_sigma_points_; i++)
   {
     x_ += weights_(i) * Xsig_pred_.col(i);
+    // std::cout<<"Add x " << i << std::endl;
+    // std::cout<<x_<<std::endl;
   }
-
+  
   MatrixXd error = Xsig_pred_ - x_.replicate(1, n_sigma_points_);
   for(size_t i = 0; i < n_sigma_points_; i++)
   {
@@ -186,7 +190,9 @@ void UKF::Prediction(double delta_t)
       error(3) += 2. * M_PI;
     P_ += weights_(i) * (error.col(i) * error.col(i).transpose());
   }
-
+  std::cout<<"X prediction"<<std::endl<<x_<<std::endl;
+  std::cout<<"P prediction"<<std::endl<<P_<<std::endl;
+  // exit(0);
 }
 
 void UKF::PredictSigmaPoints(VectorXd& x_k, MatrixXd& sigma_x_k, double dt)
@@ -212,19 +218,22 @@ void UKF::PredictSigmaPoints(VectorXd& x_k, MatrixXd& sigma_x_k, double dt)
     noise(4) = dt * v_pk;
 
     VectorXd sigma_pred = VectorXd::Zero(n_x_);
-    if(radial_velocity > 0.01)
+    if(yaw_rate > 0.001)
     {
-      double scale = radial_velocity / yaw;
+      double scale = radial_velocity / yaw_rate;
       sigma_pred(0) = scale * (sin(yaw + (yaw_rate *dt)) - sin(yaw));
       sigma_pred(1) = scale * (-cos(yaw + (yaw_rate * dt)) + cos(yaw));
       sigma_pred(3) = yaw_rate * dt;  
+      std::cout<<"Sigma Pred > 0"<<std::endl<<sigma_pred<<std::endl;
     }
     else
     {
       sigma_pred(0) = radial_velocity * cos(yaw) * dt;
       sigma_pred(1) = radial_velocity * sin(yaw) * dt;
       sigma_pred(3) = yaw_rate * dt;
+      std::cout<<"Sigma Pred < 0"<<std::endl<<sigma_pred<<std::endl;
     }
+    // std::cout<<"Sigma Pred "<<std::endl<<sigma_pred<<std::endl;
     Xsig_pred_.col(i) = x_k.head(n_x_) + sigma_pred + noise;
 
   }  
@@ -259,7 +268,8 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
    x_ += K * y;
    P_ = (I - (K * H)) * P_;
 
-   
+  std::cout<<"X lidar update"<<std::endl<<x_<<std::endl;
+  std::cout<<"P lidar update"<<std::endl<<P_<<std::endl;
 }
 
 void UKF::UpdateRadar(MeasurementPackage meas_package) {
@@ -317,5 +327,6 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   P_ -= K * S * K.transpose();
 
-
+  std::cout<<"X radar update"<<std::endl<<x_<<std::endl;
+  std::cout<<"P radar update"<<std::endl<<P_<<std::endl;
 }

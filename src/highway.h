@@ -4,7 +4,7 @@
 #include "render/render.h"
 #include "sensors/lidar.h"
 #include "tools.h"
-
+#include <iostream>
 class Highway
 {
 public:
@@ -20,7 +20,7 @@ public:
 	// Parameters 
 	// --------------------------------
 	// Set which cars to track with UKF
-	std::vector<bool> trackCars = {true,true,true};
+	std::vector<bool> trackCars = {true,false,false};
 	// Visualize sensor measurements
 	bool visualize_lidar = true;
 	bool visualize_radar = true;
@@ -138,6 +138,7 @@ public:
     			double yaw = traffic[i].ukf.x_(3);
     			double v1 = cos(yaw)*v;
     			double v2 = sin(yaw)*v;
+				// std::cout << traffic[i].ukf.x_[0] << ", " <<traffic[i].ukf.x_[1]<< ", " <<v1<< ", " <<v2<<std::endl;
 				estimate << traffic[i].ukf.x_[0], traffic[i].ukf.x_[1], v1, v2;
 				tools.estimations.push_back(estimate);
 	
