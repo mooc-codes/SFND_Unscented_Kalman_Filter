@@ -157,6 +157,18 @@ void UKF::Prediction(double delta_t) {
   // Predict sigma points to k + 1
   PredictSigmaPoints(X_aug, Xsig_aug, dt);
 
+  // Update the state mean x_ and covariance P_ using weighted sum
+  for(size_t i = 0; i < n_sigma_points_; i++)
+  {
+    x_ += weights_(i) * Xsig_pred_(i);
+  }
+  
+  MatrixXd error = Xsig_pred_ - x_.replicate(1, n_sigma_points_);
+  for(size_t i = 0; i < n_sigma_points_; i++)
+  {
+    P_ += weights_(i) * (error.col(i) * error.col(i).transpose());
+  }
+
 }
 
 
@@ -188,19 +200,6 @@ void UKF::PredictSigmaPoints(VectorXd& x_k, MatrixXd& sigma_x_k, double dt)
     }
     Xsig_pred_.col(i) = x_k + sigma_pred; // Add noise here
   }  
-
-  // Update the state mean x_ and covariance P_ using weighted sum
-  for(size_t i = 0; i < n_sigma_points_; i++)
-  {
-    x_ += weights_(i) * Xsig_pred_(i);
-  }
-  
-  MatrixXd error = Xsig_pred_ - x_.replicate(1, n_sigma_points_);
-  for(size_t i = 0; i < n_sigma_points_; i++)
-  {
-    P_ += weights_(i) * (error.col(i) * error.col(i).transpose());
-  }
-  
 }
 
 void UKF::UpdateLidar(MeasurementPackage meas_package) {
