@@ -34,11 +34,11 @@ UKF::UKF() {
   lambda_ = 3 - n_aug_; // Spread for sigma points
   n_sigma_points_ = (2 * n_aug_) + 1; // Number of sigma points needed. (2 per dimension + the current mean)
   
-  x_ = VectorXd::Zeros(5); // State 
+  x_ = VectorXd::Zero(5); // State 
   P_ = MatrixXd::Identity(5, 5); // Process covariance
-  Xsig_pred_ = MatrixXd::Zeros(n_x_, n_sigma_points_);
+  Xsig_pred_ = MatrixXd::Zero(n_x_, n_sigma_points_);
 
-  weights_ = MatrixXd::Zeros(n_sigma_points_);
+  weights_ = MatrixXd::Zero(n_sigma_points_);
   weights_(0) = lambda_ / (lambda_ + n_aug_);
   double temp_weight = 0.5 / ( lambda_ + n_aug_);
   for(size_t i=1; i < n_sigma_points_; i++)
@@ -137,9 +137,9 @@ void UKF::Prediction(double delta_t) {
    */
 
   // Augmented state mean and covariance.
-  VectorXd::Zeros X_aug(n_aug_);
+  VectorXd::Zero X_aug(n_aug_);
   X_aug.head(n_x_) = x_;
-  MatrixXd::Zeros P_aug(n_aug_, n_aug_);
+  MatrixXd::Zero P_aug(n_aug_, n_aug_);
   P_.topLeftCorner(n_x_, n_x_) = P_;
   P_(n_x_, n_x_) = pow(std_a_, 2);
   P_(n_x_+1, n_x_+1) = pow(std_yawdd_, 2);
@@ -150,8 +150,8 @@ void UKF::Prediction(double delta_t) {
   MatrixXd sigma_factors = spread_factor * Paug_sqrt.colwise();
 
   // Compute sigma points
-  // Xsig_pred_ is already initialized with zeros during construction.
-  MatrixXd::Zeros Xsig_aug(n_aug_, n_sigma_points_);
+  // Xsig_pred_ is already initialized with Zero during construction.
+  MatrixXd::Zero Xsig_aug(n_aug_, n_sigma_points_);
   Xsig_aug(0) = X_aug;
   Xsig_aug.block(0, 1, n_aug_, n_aug_) = X_aug.replicate(1, n_aug_) + sigma_factors;
   Xsig_aug.block(0, n_aug_ + 1, n_aug_, n_aug_) = X_aug.replicate(1, n_aug_) - sigma_factors;
@@ -185,14 +185,14 @@ void UKF::PredictSigmaPoints(VectorXd& x_k, MatrixXd& sigma_x_k, double dt)
     yaw = sigma_x_k(3);
     yaw_rate = sigma_x_k(4);
 
-    VectorXd::Zeros noise(n_x_);
+    VectorXd::Zero noise(n_x_);
     noise(0) = 0.5 * pow(dt, 2) * cos(yaw) * sigma_x_k(5);
     noise(1) = 0.5 * pow(dt, 2) * sin(yaw) * sigma_x_k(5);
     noise(2) = dt * sigma_x_k(5);
     noise(3) = 0.5 * pow(dt, 2) * sigma_x_k(6);
     noise(4) = dt * sigma_x_k(6);
 
-    VectorXd::Zeros sigma_pred(n_x_);
+    VectorXd::Zero sigma_pred(n_x_);
     if(radial_velocity > 0.01)
     {
       double scale = radial_velocity / yaw;
@@ -220,11 +220,11 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
    Matrixd::Identity I(n_x_, n_x_);
 
-   Matrixd::Zeros H(n_obs_lidar_, n_x_);
+   Matrixd::Zero H(n_obs_lidar_, n_x_);
    H(0, 0) = 1;
    H(1, 1) = 1;
 
-   MatrixXd::Zeros R(n_obs_lidar_, n_obs_lidar_);
+   MatrixXd::Zero R(n_obs_lidar_, n_obs_lidar_);
    R(0, 0) = pow(std_laspx_, 2);
    R(1, 1) = pow(std_laspy_, 2);
 
@@ -249,7 +249,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
    */
 
    // Project sigma points into measurement space
-   MatrixXd::Zeros Zsig(n_obs_radar_, n_sigma_points_);
+   MatrixXd::Zero Zsig(n_obs_radar_, n_sigma_points_);
    double px, py, radial_velocity, yaw;
    for(size_t i = 0; i < n_sigma_points_; i++)
    {
@@ -264,14 +264,14 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     Zsig(i, 2) = ( radial_velocity * (px * cos(yaw) + py * sin(yaw))) / radial_dist; 
    }
 
-   VectorXd::zeros z(n_obs_radar_);
-   MatrixXd::Zeros S(n_obs_radar_, n_obs_radar_);
+   VectorXd::Zero z(n_obs_radar_);
+   MatrixXd::Zero S(n_obs_radar_, n_obs_radar_);
    for(size_t i = 0; i < n_sigma_points_; i++)
    {
     z += weights_(i) * Zsig.col(i);
    }
 
-   MatrixXd::Zeros z_diff(n_obs_radar_, n_sigma_points_);
+   MatrixXd::Zero z_diff(n_obs_radar_, n_sigma_points_);
    z_diff = Zsig - z.replicate(1, n_sigma_points_);
    for(size_t i = 0; i < n_sigma_points_; i++)
    {
@@ -282,7 +282,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
    S(2, 2) += pow(std_radrd_, 2);
 
 
-  Matrixd::Zeros T(n_x_, n_obs_radar_);
+  Matrixd::Zero T(n_x_, n_obs_radar_);
 
   for(size_t i = 0; i < n_sigma_points_; i++)
   {
