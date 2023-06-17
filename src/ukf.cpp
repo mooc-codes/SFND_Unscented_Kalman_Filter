@@ -184,6 +184,13 @@ void UKF::PredictSigmaPoints(VectorXd& x_k, MatrixXd& sigma_x_k, double dt)
     yaw = sigma_x_k(3);
     yaw_rate = sigma_x_k(4);
 
+    VectorXd::Zeros noise(n_x_);
+    noise(0) = 0.5 * pow(dt, 2) * cos(yaw) * sigma_x_k(5);
+    noise(1) = 0.5 * pow(dt, 2) * sin(yaw) * sigma_x_k(5);
+    noise(2) = dt * sigma_x_k(5);
+    noise(3) = 0.5 * pow(dt, 2) * sigma_x_k(6);
+    noise(4) = dt * sigma_x_k(6);
+
     VectorXd::Zeros sigma_pred(n_x_);
     if(radial_velocity > 0.01)
     {
@@ -198,7 +205,7 @@ void UKF::PredictSigmaPoints(VectorXd& x_k, MatrixXd& sigma_x_k, double dt)
       sigma_pred(1) = radial_velocity * sin(yaw) * dt;
       sigma_pred(3) = yaw_rate * dt;
     }
-    Xsig_pred_.col(i) = x_k + sigma_pred; // Add noise here
+    Xsig_pred_.col(i) = x_k + sigma_pred + noise;
   }  
 }
 
