@@ -256,7 +256,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
    {
     px = Xsig_pred_(i, 0);
     py = Xsig_pred_(i, 1);
-    radial_velocity = Xsig_pred_(i, 2)
+    radial_velocity = Xsig_pred_(i, 2);
     yaw = Xsig_pred_(i, 3);
 
     double radial_dist = sqrt(pow(px, 2) + pow(py, 2));
@@ -276,7 +276,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
    z_diff = Zsig - z.replicate(1, n_sigma_points_);
    for(size_t i = 0; i < n_sigma_points_; i++)
    {
-    S += weights_(i) * (z_diff.col(i) * z_diff.col(i).transpose())
+    S += weights_(i) * (z_diff.col(i) * z_diff.col(i).transpose());
    }
    S(0, 0) += pow(std_radr_, 2);
    S(1, 1) += pow(std_radphi_, 2);
